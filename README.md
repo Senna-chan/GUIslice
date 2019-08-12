@@ -1,3 +1,5 @@
+In this fork I am trying to make a opensource HMI display as alternative to Nextion.
+
 # GUIslice library #
 [![Build Status](https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master)](https://travis-ci.org/ImpulseAdventure/GUIslice)
 [![GitHub Issues](https://img.shields.io/github/issues/ImpulseAdventure/GUIslice.svg)](https://github.com/ImpulseAdventure/GUIslice/issues)
