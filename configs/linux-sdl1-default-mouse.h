@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_LINUX_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     LINUX Virtual Machine (VM)
 //   - Display: Built-in via SDL1.2
 //   - Touch:   Mouse via SDL1.2
@@ -60,7 +60,7 @@ extern "C" {
   // =============================================================================
 
   // -----------------------------------------------------------------------------
-  // Device Mode Selection
+  // SECTION 1: Device Mode Selection
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
@@ -69,26 +69,27 @@ extern "C" {
   #define DRV_TOUCH_IN_DISP         // SDL provides touch handling
 
   // -----------------------------------------------------------------------------
-  // Pinout
+  // SECTION 2: Pinout
   // -----------------------------------------------------------------------------
 
   // -----------------------------------------------------------------------------
-  // Orientation
+  // SECTION 3: Orientation
   // -----------------------------------------------------------------------------
 
   // Set Default rotation of the display
   // - Values 0,1,2,3. Rotation is clockwise
-  // - Note that changing this value may require a change
-  //   to GSLC_TOUCH_ROTATE as well to ensure the touch screen
-  //   orientation matches the display.
+  // NOTE: The GSLC_ROTATE feature is not yet supported in SDL mode
+  //       however, the following settings are provided for future use.
   #define GSLC_ROTATE     1
 
   // -----------------------------------------------------------------------------
-  // Touch Handling
+  // SECTION 4: Touch Handling
+  // - Documentation for configuring touch support can be found at:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
   // -----------------------------------------------------------------------------
-  // Diagnostics
+  // SECTION 5: Diagnostics
   // -----------------------------------------------------------------------------
 
   // Error reporting
@@ -110,7 +111,7 @@ extern "C" {
   //#define INIT_MSG_DISABLE
 
   // -----------------------------------------------------------------------------
-  // Optional Features
+  // SECTION 6: Optional Features
   // -----------------------------------------------------------------------------
 
   // Enable of optional features
@@ -118,14 +119,20 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  1   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    1   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
 
+  // Enable support for SD card
+  // - Set to 1 to enable, 0 to disable
+  // - Note that the inclusion of the SD library consumes considerable
+  //   RAM and flash memory which could be problematic for Arduino models
+  //   with limited resources.
+  // - NOTE: Mode not supported in LINUX
+  #define GSLC_SD_EN    0
+
 
   // =============================================================================
-  // INTERNAL CONFIGURATION
+  // SECTION 10: INTERNAL CONFIGURATION
   // - The following settings should not require modification by users
   // =============================================================================
 
@@ -149,7 +156,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        1   // 1=Use floating pt library, 0=Fixed-point lookup tables
 

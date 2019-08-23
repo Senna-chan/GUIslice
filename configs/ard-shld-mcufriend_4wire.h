@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: MCUFRIEND
 //   - Touch:   Simple Analog (Resistive)
@@ -79,7 +79,7 @@ extern "C" {
 
 
   // SD Card
-  #define ADAGFX_PIN_SDCS    10     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     10    // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -150,8 +150,7 @@ extern "C" {
   #define ADATOUCH_X_MAX    187
   #define ADATOUCH_Y_MIN    950
   #define ADATOUCH_Y_MAX    202
-  // Certain touch controllers may swap X & Y coords
-  #define ADATOUCH_REMAP_YX 0
+  #define ADATOUCH_REMAP_YX 0    // Some touch controllers may swap X & Y coords
 
   // Touch overlay resistance value
   // - In most cases, this value can be left as-is
@@ -177,6 +176,7 @@ extern "C" {
   //#define ADATOUCH_Y_MAX    892
 
   // MCUFRIEND_ID == 0x1581:
+  // - mcufriend 3.5" red
   // - DRV_TOUCH_ADA_SIMPLE [320x480]: (MCUFRIEND ID=0x1581) (XP=6,XM=56,YP=55,YM=7) [TESTED]
   //#define ADATOUCH_PIN_YP   A1
   //#define ADATOUCH_PIN_XM   A2
@@ -276,6 +276,10 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Define pressure threshold for detecting a touch
+  // - Specifying this range helps eliminate some erroneous touch events
+  //   resulting from noise in the touch overlay detection
+  // - For config details, please see:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
   #define ADATOUCH_PRESS_MIN  10
   #define ADATOUCH_PRESS_MAX  4000
 
@@ -310,8 +314,6 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
@@ -352,7 +354,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 

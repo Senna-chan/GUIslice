@@ -87,7 +87,7 @@ gslc_tsPage                 m_asPage[MAX_PAGE];
 gslc_tsElem                 m_asPageElem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef              m_asPageElemRef[MAX_ELEM_PG_MAIN];
 
-gslc_tsXProgress            m_sXGauge,m_sXGauge1;
+gslc_tsXProgress            m_sXProgress,m_sXProgress1;
 gslc_tsXCheckbox            m_asXCheck[3];
 gslc_tsXSlider              m_sXSlider;
 
@@ -108,10 +108,14 @@ static int16_t DebugOut(char ch) { Serial.write(ch); return 0; }
 // - Detect a button press
 // - In this particular example, we are looking for the Quit button press
 //   which is used to terminate the program.
-bool CbBtnQuit(void* pvGui,void *pvElem,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnQuit(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
 {
+  //gslc_tsGui*     pGui      = (gslc_tsGui*)(pvGui);
+  //gslc_tsElemRef* pElemRef  = (gslc_tsElemRef*)(pvElemRef);
+
   if (eTouch == GSLC_TOUCH_UP_IN) {
     m_bQuit = true;
+    GSLC_DEBUG_PRINT("Callback: Quit button pressed\n", "");
   }
   return true;
 }
@@ -168,9 +172,11 @@ bool InitOverlays()
   pElemRef = gslc_ElemCreateBox(&m_gui,E_ELEM_BOX,E_PG_MAIN,(gslc_tsRect){10,50,300,150});
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_WHITE,GSLC_COL_BLACK,GSLC_COL_BLACK);
 
-  // Create Quit button with text label
+  // Create Quit button with modifiable text label
+  static char mstr_quit[8] = "Quit";
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_QUIT,E_PG_MAIN,
-    (gslc_tsRect){160,80,80,40},(char*)"Quit",0,E_FONT_BTN,&CbBtnQuit);
+    (gslc_tsRect){160,80,80,40},mstr_quit,sizeof(mstr_quit),E_FONT_BTN,&CbBtnQuit);
+  gslc_ElemSetRoundEn(&m_gui,pElemRef,true);
 
   // Create counter
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,60,50,10},
@@ -184,13 +190,13 @@ bool InitOverlays()
   // Create progress bar (horizontal)
   pElemRef = gslc_ElemCreateTxt(&m_gui,GSLC_ID_AUTO,E_PG_MAIN,(gslc_tsRect){20,80,50,10},
     (char*)"Progress:",0,E_FONT_TXT);
-  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXGauge,
+  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS,E_PG_MAIN,&m_sXProgress,
     (gslc_tsRect){80,80,50,10},0,100,0,GSLC_COL_GREEN,false);
   m_pElemProgress = pElemRef; // Save for quick access
 
   // Second progress bar (vertical)
   // - Demonstration of vertical bar with offset zero-pt showing both positive and negative range
-  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXGauge1,
+  pElemRef = gslc_ElemXProgressCreate(&m_gui,E_ELEM_PROGRESS1,E_PG_MAIN,&m_sXProgress1,
     (gslc_tsRect){280,80,10,100},-25,75,-15,GSLC_COL_RED,true);
   gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_BLUE_DK3,GSLC_COL_BLACK,GSLC_COL_BLACK);
   m_pElemProgress1 = pElemRef; // Save for quick access
@@ -298,11 +304,25 @@ void loop()
   // Slow down updates
   delay(10);
 
-  // In a real program, we would detect the button press and take an action.
-  // For this Arduino demo, we will pretend to exit by emulating it with an
-  // infinite loop. Note that interrupts are not disabled so that any debug
-  // messages via Serial have an opportunity to be transmitted.
+  // In an Arduino sketch, one doesn't normally "Quit" the program.
+  // For demonstration purposes, we are going to demonstrate
+  // changing the Quit button appearance and then stopping the program
+  // in an infinite loop.
   if (m_bQuit) {
+    // Fetch a reference to the Quit button
+    // - This demonstrates how to get an element from its ID (enumeration)
+    // - In most cases, it is easier to save an element reference variable
+    //   when we call ElemCreate*() on any element that we want to modify later.
+    gslc_tsElemRef* pElemRef = gslc_PageFindElemById(&m_gui, E_PG_MAIN, E_ELEM_BTN_QUIT);
+
+    // Change the button text
+    gslc_ElemSetTxtStr(&m_gui, pElemRef, (char*)"STOP");
+    // Change the button color
+    gslc_ElemSetCol(&m_gui, pElemRef, GSLC_COL_RED_LT4, GSLC_COL_RED, GSLC_COL_RED_LT2);
+
+    // Let's stop the program here by calling a final update, Quit and
+    // then stall in an infinite loop.
+    gslc_Update(&m_gui);
     gslc_Quit(&m_gui);
     while (1) { }
   }

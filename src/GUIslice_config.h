@@ -49,6 +49,13 @@ extern "C" {
 //   which is selected at the bottom of this file
 // - Refer to https://github.com/ImpulseAdventure/GUIslice/wiki/Display-Config-Table
 //   to help identify a suitable config for your MCU shield / display
+// - Multiple configurations can be supported using the method described here:
+//   https://github.com/ImpulseAdventure/GUIslice/wiki/Arduino-Multiple-Configs
+// =========================================================================================
+
+// =========================================================================================
+// IMPORTANT: Ensure you backup any custom config files before updating GUIslice!
+//            The Arduino IDE deletes all files within the library when updating
 // =========================================================================================
 
   // ---------------------------------------------------------------------------------------
@@ -65,16 +72,18 @@ extern "C" {
   //#include "../configs/ard-shld-adafruit_18_joy.h"
   //#include "../configs/ard-shld-adafruit_28_cap.h"
   //#include "../configs/ard-shld-adafruit_28_res.h"
+  //#include "../configs/ard-shld-eastrising_50_ra8875_res.h"
+  //#include "../configs/ard-shld-eastrising_50_ssd1963_res.h"  
   //#include "../configs/ard-shld-elegoo_28_res.h"
   //#include "../configs/ard-shld-generic1_35_touch.h"
   //#include "../configs/ard-shld-ili9341_16b_touch.h"
   //#include "../configs/ard-shld-mcufriend.h"
   //#include "../configs/ard-shld-mcufriend_4wire.h"
   //#include "../configs/ard-shld-mcufriend_xpt2046.h"
+  //#include "../configs/ard-shld-osmart_22_68130_touch.h"
   //#include "../configs/ard-shld-waveshare_28_touch.h"
   //#include "../configs/ard-shld-waveshare_40_notouch.h"
   //#include "../configs/ard-shld-waveshare_40_xpt2046.h"
-  //#include "../configs/ard-shld-osmart_22_68130_touch.h"
   //#include "../configs/ard-adagfx-hx8347-xpt2046.h"
   //#include "../configs/ard-adagfx-hx8357-ft6206.h"
   //#include "../configs/ard-adagfx-hx8357-notouch.h"

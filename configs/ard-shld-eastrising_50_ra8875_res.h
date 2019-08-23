@@ -2,12 +2,11 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
-//   - CPU:     Arduino MEGA / Due
+// GUIslice library (example user configuration) for:
+//   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: RA8875 800x480 SPI
 //   - Touch:   RA8875 integrated resistive controller
 //   - Wiring:  EastRising Arduino shield (ER-AS-RA8875)
-//              - Pinout:
 //
 //   - Example display:
 //     - EastRising 5.0" TFT Arduino Touch Shield w/ RA8875 for Mega/Due/UNO (ER-TFTM050-3-4125)
@@ -16,8 +15,8 @@
 // - To use this example configuration, include in "GUIslice_config.h"
 //
 // WIRING:
-// - As this config file is designed for a breakout board, customization
-//   of the Pinout in SECTION 2 will be required to match your display.
+// - As this config file is designed for a shield, no additional
+//   wiring is required to support the GUI operation
 //
 // =============================================================================
 // - Calvin Hass
@@ -86,6 +85,10 @@ extern "C" {
   #define ADAGFX_PIN_CS       10    // Display chip select
   #define ADAGFX_PIN_RST      9     // Display Reset
 
+  // SD Card
+  #define ADAGFX_PIN_SDCS     4     // SD card chip select (if GSLC_SD_EN=1)
+
+
 
   // -----------------------------------------------------------------------------
   // SECTION 3: Orientation
@@ -101,6 +104,8 @@ extern "C" {
   //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configure-Touch-Support
   // -----------------------------------------------------------------------------
 
+
+
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4B: Update your calibration settings here
   // - These values should come from the diag_ard_touch_calib sketch output
@@ -112,17 +117,19 @@ extern "C" {
   #define ADATOUCH_X_MAX    66
   #define ADATOUCH_Y_MIN    923
   #define ADATOUCH_Y_MAX    88
-  // Certain touch controllers may swap X & Y coords
-  #define ADATOUCH_REMAP_YX 0
+  #define ADATOUCH_REMAP_YX 0    // Some touch controllers may swap X & Y coords
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Define pressure threshold for detecting a touch
+  // - Specifying this range helps eliminate some erroneous touch events
+  //   resulting from noise in the touch overlay detection
+  // - For config details, please see:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
   #define ADATOUCH_PRESS_MIN  10
   #define ADATOUCH_PRESS_MAX  4000
-
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
@@ -155,8 +162,6 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
@@ -197,7 +202,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 

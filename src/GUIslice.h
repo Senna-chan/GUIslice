@@ -7,7 +7,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.12.1
+// - Version 0.13.0
 // =======================================================================
 //
 // The MIT License
@@ -3136,14 +3136,13 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 ///
 /// Draw an element to the active display
 /// - Element is referenced by a page ID and element ID
+/// - Provides similar functionality as ElemDrawByRef() but accepts page and element IDs
 ///
 /// \param[in]  pGui:        Pointer to GUI
 /// \param[in]  nPageId:     ID of page containing element
 /// \param[in]  nElemId:     ID of element
 ///
 /// \return none
-///
-/// \todo Unused?
 ///
 void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId);
 

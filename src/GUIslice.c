@@ -4,7 +4,7 @@
 // - https://www.impulseadventure.com/elec/guislice-gui.html
 // - https://github.com/ImpulseAdventure/GUIslice
 //
-// - Version 0.12.1
+// - Version 0.13.0
 // =======================================================================
 //
 // The MIT License
@@ -1262,7 +1262,8 @@ void gslc_DrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,
   // Call optimized driver implementation
   gslc_DrvDrawFrameRoundRect(pGui,rRect,nRadius,nCol);
 #else
-  // TODO
+  // TODO: Add emulation of rounded rects. For now fallback to square corners
+  gslc_DrvDrawFrameRect(pGui,rRect,nCol);
 #endif
 
   gslc_PageFlipSet(pGui,true);
@@ -1303,7 +1304,8 @@ void gslc_DrawFillRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,g
   // Call optimized driver implementation
   gslc_DrvDrawFillRoundRect(pGui,rRect,nRadius,nCol);
 #else
-  // TODO
+  // TODO: Add emulation of rounded rects. For now fallback to square corners
+  gslc_DrvDrawFillRect(pGui,rRect,nCol);
 #endif
 
   gslc_PageFlipSet(pGui,true);
@@ -1799,9 +1801,9 @@ bool gslc_FontSetBase(gslc_tsGui* pGui, uint8_t nFontInd, int16_t nFontId, gslc_
   } else {
     // Fetch a font resource from the driver
     const void* pvFont = gslc_DrvFontAdd(eFontRefType,pvFontRef,nFontSz);
-    // TODO: Resolve a means to detect if LINUX font files failed to load
-    //       and then return 'false'. Note that DrvFontAdd() may normally
-    //       return NULL in ADAGFX mode for some font types.
+    // FIXME: Resolve a means to detect if LINUX font files failed to load
+    //         and then return 'false'. Note that DrvFontAdd() may normally
+    //         return NULL in ADAGFX mode for some font types.
 
     gslc_ResetFont(&(pGui->asFont[nFontInd]));
   
@@ -2864,8 +2866,8 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
 
 // Draw an element to the active display
 // - Element is referenced by page ID and element ID
-// - This routine is typically called by user code for custom
-//   drawing callbacks
+// - Tnis routine triggers an immediate redraw of an element, and may be useful
+//   for user code in creating custom drawing callbacks
 void gslc_ElemDraw(gslc_tsGui* pGui,int16_t nPageId,int16_t nElemId)
 {
   gslc_tsElemRef* pElemRef = gslc_PageFindElemById(pGui,nPageId,nElemId);

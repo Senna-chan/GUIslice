@@ -2,7 +2,7 @@
 #define _GUISLICE_CONFIG_ARD_H_
 
 // =============================================================================
-// GUIslice library (example user configuration #???) for:
+// GUIslice library (example user configuration) for:
 //   - CPU:     Arduino UNO / MEGA / etc
 //   - Display: Waveshare ILI9486
 //   - Touch:   XPT2046 (Resistive)
@@ -69,9 +69,9 @@ extern "C" {
   // - The following defines the display and touch drivers
   //   and should not require modifications for this example config
   // -----------------------------------------------------------------------------
-  #define DRV_DISP_ADAGFX            // Adafruit-GFX library
+  #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_WAVESHARE_ILI9486 // ImpulseAdventure/Waveshare_ILI9486
-  #define DRV_TOUCH_XPT2046_PS       // PaulStoffregen/XPT2046_Touchscreen
+  #define DRV_TOUCH_XPT2046_PS      // PaulStoffregen/XPT2046_Touchscreen
 
 
   // -----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ extern "C" {
 
 
   // SD Card
-  #define ADAGFX_PIN_SDCS    5     // SD card chip select (if GSLC_SD_EN=1)
+  #define ADAGFX_PIN_SDCS     5    // SD card chip select (if GSLC_SD_EN=1)
 
 
 
@@ -114,22 +114,24 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Calibration settings from diag_ard_touch_calib:
-  // DRV_TOUCH_XPT2046_PS [480x320]:
   #define ADATOUCH_X_MIN    234
   #define ADATOUCH_X_MAX    3968
   #define ADATOUCH_Y_MIN    171
   #define ADATOUCH_Y_MAX    3823
-  #define ADATOUCH_REMAP_YX 1
-  #define GSLC_ROTATE_SPECIAL 3 // No Rotation supported
+  #define ADATOUCH_REMAP_YX 1    // Some touch controllers may swap X & Y coords
+  #define GSLC_ROTATE_SPECIAL 3  // No Rotation supported
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // SECTION 4D: Additional touch configuration
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Define pressure threshold for detecting a touch
-  #define ADATOUCH_PRESS_MIN  10
+  // - Specifying this range helps eliminate some erroneous touch events
+  //   resulting from noise in the touch overlay detection
+  // - For config details, please see:
+  //   https://github.com/ImpulseAdventure/GUIslice/wiki/Configuring-Touch-Pressure
+  #define ADATOUCH_PRESS_MIN  200
   #define ADATOUCH_PRESS_MAX  4000
-
 
   // -----------------------------------------------------------------------------
   // SECTION 5: Diagnostics
@@ -144,7 +146,7 @@ extern "C" {
   //   - DEBUG_ERR 2 = Enable verbose error messaging (eg. bad parameters, etc.)
   // - For baseline Arduino UNO, recommended to disable this after one has
   //   confirmed basic operation of the library is successful.
-  #define DEBUG_ERR               2   // 1,2 to enable, 0 to disable
+  #define DEBUG_ERR               1   // 1,2 to enable, 0 to disable
 
   // Debug initialization message
   // - By default, GUIslice outputs a message in DEBUG_ERR mode
@@ -162,8 +164,6 @@ extern "C" {
   //   set the following features to 0 (to disable) unless they are
   //   required.
   #define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-  #define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-  #define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
 
@@ -204,7 +204,7 @@ extern "C" {
 
   // Enable for bitmap transparency and definition of color to use
   #define GSLC_BMP_TRANS_EN     1               // 1 = enabled, 0 = disabled
-  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default:pink)
+  #define GSLC_BMP_TRANS_RGB    0xFF,0x00,0xFF  // RGB color (default: MAGENTA)
 
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
