@@ -44,6 +44,9 @@
 
 #include <stdio.h>
 
+// ------------------------------------------------------------------------
+// Load display drivers
+// ------------------------------------------------------------------------
 #if defined(DRV_DISP_UTFT)
   #include <UTFT.h>
 #else
@@ -51,6 +54,9 @@
 #endif
 
 
+// ------------------------------------------------------------------------
+// Load touch drivers
+// ------------------------------------------------------------------------
 #if defined(DRV_TOUCH_URTOUCH)
   #if defined(DRV_TOUCH_URTOUCH_OLD)
     #include <UTouch.h> // Select old version of URTouch
@@ -58,6 +64,8 @@
     #include <URTouch.h>
   #endif
 #endif
+
+// ------------------------------------------------------------------------
 
 
 #ifdef __cplusplus
@@ -205,6 +213,7 @@ bool gslc_DrvSetBkgndImage(gslc_tsGui* pGui,gslc_tsImgRef sImgRef)
     gslc_DrvImageDestruct(pGui->sImgRefBkgnd.pvImgRaw);
     pGui->sImgRefBkgnd = gslc_ResetImage();
   }
+
   pGui->sImgRefBkgnd = sImgRef;
   pGui->sImgRefBkgnd.pvImgRaw = gslc_DrvLoadImage(pGui,sImgRef);
   if (pGui->sImgRefBkgnd.pvImgRaw == NULL) {
@@ -423,6 +432,17 @@ void gslc_DrvPageFlipNow(gslc_tsGui* pGui)
 // Graphics Primitives Functions
 // -----------------------------------------------------------------------
 
+inline void gslc_DrvDrawPoint_base(int16_t nX, int16_t nY, int16_t nColRaw)
+{
+  m_disp.setColor(nColRaw);
+  m_disp.drawPixel(nX, nY);
+}
+
+inline void gslc_DrvDrawLine_base(int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int16_t nColRaw)
+{
+  m_disp.setColor(nColRaw);
+  m_disp.drawLine(nX0,nY0,nX1,nY1);
+}
 
 bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 {
@@ -433,8 +453,7 @@ bool gslc_DrvDrawPoint(gslc_tsGui* pGui,int16_t nX,int16_t nY,gslc_tsColor nCol)
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
-  m_disp.setColor(nColRaw);
-  m_disp.drawPixel(nX, nY);
+  gslc_DrvDrawPoint_base(nX, nY, nColRaw);
   return true;
 }
 
@@ -473,7 +492,7 @@ bool gslc_DrvDrawFillRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadiu
 bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 {
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
-  m_disp.setColor(nColRaw);
+
 #if (GSLC_CLIP_EN)
   // Perform clipping
   // - TODO: Optimize the following, perhaps with new ClipLineHV()
@@ -484,26 +503,27 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
   nY0 = rRect.y;
   nX1 = rRect.x + rRect.w - 1;
   nY1 = nY0;
-  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1); }
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
   // Bottom
   nX0 = rRect.x;
   nY0 = rRect.y + rRect.h - 1;
   nX1 = rRect.x + rRect.w - 1;
   nY1 = nY0;
-  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1); }
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
   // Left
   nX0 = rRect.x;
   nY0 = rRect.y;
   nX1 = nX0;
   nY1 = rRect.y + rRect.h - 1;
-  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1); }
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
   // Right
   nX0 = rRect.x + rRect.w - 1;
   nY0 = rRect.y;
   nX1 = nX0;
   nY1 = rRect.y + rRect.h - 1;
-  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { m_disp.drawLine(nX0, nY0, nX1, nY1); }
+  if (gslc_ClipLine(&pDriver->rClipRect, &nX0, &nY0, &nX1, &nY1)) { gslc_DrvDrawLine_base(nX0, nY0, nX1, nY1, nColRaw); }
 #else
+  m_disp.setColor(nColRaw);
   m_disp.drawRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
 #endif
   return true;
@@ -511,6 +531,7 @@ bool gslc_DrvDrawFrameRect(gslc_tsGui* pGui,gslc_tsRect rRect,gslc_tsColor nCol)
 
 bool gslc_DrvDrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadius,gslc_tsColor nCol)
 {
+#if (DRV_HAS_DRAW_RECT_ROUND_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
 
   // TODO: Support GSLC_CLIP_EN
@@ -518,6 +539,7 @@ bool gslc_DrvDrawFrameRoundRect(gslc_tsGui* pGui,gslc_tsRect rRect,int16_t nRadi
   m_disp.setColor(nColRaw);
   // TODO: Handle radius?
   m_disp.drawRoundRect(rRect.x,rRect.y,rRect.x+rRect.w-1,rRect.y+rRect.h-1);
+#endif
   return true;
 }
 
@@ -531,8 +553,7 @@ bool gslc_DrvDrawLine(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16
 #endif
 
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
-  m_disp.setColor(nColRaw);
-  m_disp.drawLine(nX0, nY0, nX1, nY1);
+  gslc_DrvDrawLine_base(nX0,nY0,nX1,nY1,nColRaw);
   return true;
 }
 
@@ -542,9 +563,11 @@ bool gslc_DrvDrawFrameCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nR
   // TODO
 #endif
 
+#if (DRV_HAS_DRAW_CIRCLE_FRAME)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.setColor(nColRaw);
   m_disp.drawCircle(nMidX, nMidY, nRadius);
+#endif
   return true;
 }
 
@@ -554,9 +577,11 @@ bool gslc_DrvDrawFillCircle(gslc_tsGui*,int16_t nMidX,int16_t nMidY,uint16_t nRa
   // TODO
 #endif
 
+#if (DRV_HAS_DRAW_CIRCLE_FILL)
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(nCol);
   m_disp.setColor(nColRaw);
   m_disp.fillCircle(nMidX, nMidY, nRadius);
+#endif
   return true;
 }
 
@@ -641,11 +666,9 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
       if (bProgMem) {
         //To read from Flash Memory, pgm_read_XXX is required.
         //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
-        m_disp.setColor(pgm_read_word(pImage++));
-        m_disp.drawPixel(nDstX + col, nDstY + row);
+        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, pgm_read_word(pImage++));
       } else {
-        m_disp.setColor(*(pImage++));
-        m_disp.drawPixel(nDstX + col, nDstY + row);
+        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, *(pImage++));
       }
     } // end pixel
   }
@@ -1280,6 +1303,7 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
 
   // Now update the touch remapping
   #if !defined(DRV_TOUCH_NONE)
+    // Correct touch mapping according to current rotation mode
     pGui->nSwapXY = TOUCH_ROTATION_SWAPXY(pGui->nRotation);
     pGui->nFlipX = TOUCH_ROTATION_FLIPX(pGui->nRotation);
     pGui->nFlipY = TOUCH_ROTATION_FLIPY(pGui->nRotation);
