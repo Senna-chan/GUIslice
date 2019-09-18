@@ -63,6 +63,9 @@
   #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
     #include <Adafruit_TFTLCD.h>
     #include <SPI.h>
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_16BIT)
+    #include <Adafruit_TFTLCD_16bit_STM32.h>
+    #include <SPI.h>
   #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
     #include <ILI9341_t3.h>
     #include <SPI.h>
@@ -201,6 +204,11 @@ extern "C" {
 #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
   const char* m_acDrvDisp = "ADA_ILI9341_8b";
   Adafruit_TFTLCD m_disp = Adafruit_TFTLCD (ADAGFX_PIN_CS, ADAGFX_PIN_DC, ADAGFX_PIN_WR, ADAGFX_PIN_RD, ADAGFX_PIN_RST);
+
+// ------------------------------------------------------------------------
+#elif defined(DRV_DISP_ADAGFX_ILI9341_16BIT)
+  const char* m_acDrvDisp = "ADA_ILI9341_16b";
+  Adafruit_TFTLCD_16bit_STM32 m_disp;
 
 // ------------------------------------------------------------------------
 #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
@@ -500,6 +508,9 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
       uint16_t identifier = m_disp.readID();
       m_disp.begin(identifier);
+
+    #elif defined(DRV_DISP_ADAGFX_ILI9341_16BIT)
+      m_disp.begin(); // Default is 9341
 
     #elif defined(DRV_DISP_ADAGFX_ILI9341_T3)
       m_disp.begin();
@@ -2452,6 +2463,20 @@ bool gslc_DrvRotate(gslc_tsGui* pGui, uint8_t nRotation)
     }
 
   #elif defined(DRV_DISP_ADAGFX_ILI9341_8BIT)
+    pGui->nDisp0W = ILI9341_TFTWIDTH;
+    pGui->nDisp0H = ILI9341_TFTHEIGHT;
+    m_disp.setRotation(pGui->nRotation);
+    if (!bSwap) {
+      pGui->nDispW = ILI9341_TFTWIDTH;
+      pGui->nDispH = ILI9341_TFTHEIGHT;
+    } else {
+      pGui->nDispW = ILI9341_TFTHEIGHT;
+      pGui->nDispH = ILI9341_TFTWIDTH;
+    }
+
+  #elif defined(DRV_DISP_ADAGFX_ILI9341_16BIT)
+#define ILI9341_TFTWIDTH  240
+#define ILI9341_TFTHEIGHT 320
     pGui->nDisp0W = ILI9341_TFTWIDTH;
     pGui->nDisp0H = ILI9341_TFTHEIGHT;
     m_disp.setRotation(pGui->nRotation);

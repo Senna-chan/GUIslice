@@ -135,6 +135,10 @@ extern "C" {
   //#include "../configs/rpi-sdl1-default-tslib.h"
   //#include "../configs/linux-sdl1-default-mouse.h"
 
+  // HMI
+  // ------------------------------------------------------
+  #include "../configs/hmi-adagfx-ili9341_16b-xpt2046.h"
+
 
 // =========================================================================================
 // DETECT DEVICE PLATFORM
