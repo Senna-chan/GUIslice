@@ -1,4 +1,6 @@
 In this fork I am trying to make a opensource HMI display as alternative to Nextion.
+ILI9341 16bit library
+- [ILI9341 16bit library](https://github.com/StarlightNL/Adafruit_TFTLCD_16bit_STM32) forked from [here](https://github.com/stevstrong/Adafruit_TFTLCD_16bit_STM32)
 
 # GUIslice library #
 [![Build Status](https://travis-ci.org/ImpulseAdventure/GUIslice.svg?branch=master)](https://travis-ci.org/ImpulseAdventure/GUIslice)
