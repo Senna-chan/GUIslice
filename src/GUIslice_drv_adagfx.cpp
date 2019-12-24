@@ -808,7 +808,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 
 #elif defined(DRV_DISP_WAVESHARE_ILI9486)
   // FIXME: Add support for user defined fonts
-  m_disp.setFont((sFONT*)(pFont->pvFont));
+  m_disp.setFont();
 
   nTxtScale = pFont->nSize;
   m_disp.setTextSize(nTxtScale);
@@ -906,7 +906,7 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
   m_disp.setTextScale(nTxtScale);
 #elif defined(DRV_DISP_WAVESHARE_ILI9486)
   // TODO: Add support for user defined fonts
-  m_disp.setFont((sFONT*)(pFont->pvFont));
+  m_disp.setFont();
   m_disp.setTextColor(nColRaw);
   m_disp.setCursor(nTxtX,nTxtY);
   m_disp.setTextSize(nTxtScale);
