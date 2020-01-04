@@ -40,7 +40,6 @@
 
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
-
 #include <stdio.h>
 
 #if defined(DBG_REDRAW)
@@ -128,7 +127,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   #if !defined(INIT_MSG_DISABLE)
   GSLC_DEBUG_PRINT("GUIslice version [%s]:\n", gslc_GetVer(pGui));
   #endif
-
+#if defined(HMI_SERIAL)
+  gslc_hmi_init();
+#endif
   pGui->eInitStatTouch = GSLC_INITSTAT_UNDEF;
 
   // Initialize state
@@ -2880,6 +2881,19 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
         // Pass in the relative position from corner of element region
         (*pfuncXTouch)(pvGui,(void*)(pElemRefTracked),eTouch,nRelX,nRelY);
       }
+	  #if defined(HMI_SERIAL)
+		  if (eTouch == GSLC_TOUCH_UP_IN) {
+			  if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_UP == GSLC_HMI_TOUCH_UP) {
+				  gslc_hmi_sendTouchUp(pvGui, (void*)(pElemRefTracked));
+			  }
+		  }
+		  if(eTouch == GSLC_TOUCH_DOWN_IN)
+		  {
+			  if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_DOWN == GSLC_HMI_TOUCH_DOWN) {
+	              gslc_hmi_sendTouchDown(pvGui, (void*)(pElemRefTracked));
+			  }
+		  }
+	  #endif
       #endif // DRV_TOUCH_NONE
       break;
 
@@ -4826,6 +4840,7 @@ void gslc_ResetElem(gslc_tsElem* pElem)
   pElem->pfuncXDraw       = NULL;
   pElem->pfuncXTouch      = NULL;
   pElem->pfuncXTick       = NULL;
+  pElem->HMISendEvents	  = 0;
 #if (GSLC_FEATURE_COMPOUND)
   pElem->pElemRefParent   = NULL;
 #endif
