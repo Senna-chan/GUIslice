@@ -54,6 +54,9 @@ extern "C" {
 // Import configuration ( which will import a sub-config depending on device type)
 #include "GUIslice_config.h"
 
+
+#include "GUIslice_hmi.h"
+
 // Provide an alias for PROGMEM so that we can disable
 // it on devices that don't use it when defining constant
 // strings in FLASH memory.
@@ -253,7 +256,15 @@ typedef enum {
 #define GSLC_COLMONO_BLACK  (gslc_tsColor) {255,255,255}   ///< Black
 #define GSLC_COLMONO_WHITE  (gslc_tsColor) {  0,  0,  0}   ///< White
 
-
+/// HMI Event types: Touch
+#define GSLC_HMI_TOUCH_DOWN			(1<<0) ///< Used for when you touch a element
+#define GSLC_HMI_TOUCH_UP			(1<<1) ///< Used for when you release a element
+#define GSLC_HMI_TOUCH_MOVE			(1<<2) ///< Used for when you move over a element(Slider change)
+#define GSLC_HMI_PAGE_ENTER			(1<<3) ///< Used for when you enter a page(Page loaded)
+#define GSLC_HMI_PAGE_LEAVE			(1<<4) ///< Used for when you leave a page(Page unloaded)
+#define GSLC_HMI_VALUE_CHANGED		(1<<5) ///< Used for when a value of something changes(Checkbox, Slider, etc)
+// #define TOUCH_UP			(1<<6)
+// #define TOUCH_UP			(1<<7)
 
 /// Raw input event types: touch, key, GPIOs
 typedef enum {
@@ -642,6 +653,7 @@ typedef struct gslc_tsElem {
   GSLC_CB_DRAW        pfuncXDraw;       ///< Callback func ptr for custom drawing
   GSLC_CB_TOUCH       pfuncXTouch;      ///< Callback func ptr for touch
   GSLC_CB_TICK        pfuncXTick;       ///< Callback func ptr for timer/main loop tick
+  uint8_t 		      HMISendEvents;    ///< Events that need to be send over the wire
 } gslc_tsElem;
 
 
