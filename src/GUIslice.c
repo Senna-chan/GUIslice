@@ -68,7 +68,8 @@
 
 /// Global debug output function
 /// - The user assigns this function via gslc_InitDebug()
-GSLC_CB_DEBUG_OUT g_pfDebugOut = NULL;
+extern GSLC_CB_DEBUG_OUT g_pfDebugOut = NULL;
+extern GSLC_CB_DEBUG_OUT g_pfHmiOut = NULL;
 
 // Forward declaration for trigonometric lookup table
 extern uint16_t  m_nLUTSinF0X16[257];
@@ -122,9 +123,6 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   #if !defined(INIT_MSG_DISABLE)
   GSLC_DEBUG_PRINT("GUIslice version [%s]:\n", gslc_GetVer(pGui));
   #endif
-#if defined(HMI_SERIAL)
-  gslc_hmi_init();
-#endif
   pGui->eInitStatTouch = GSLC_INITSTAT_UNDEF;
 
   // Initialize state
@@ -339,6 +337,11 @@ void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc)
   g_pfDebugOut = pfunc;
 }
 
+void gslc_InitHmi(GSLC_CB_DEBUG_OUT pfunc)
+{
+  g_pfHmiOut = pfunc;
+}
+
 
 // Internal enumerations for printf() parser state machine
 typedef enum {
@@ -365,10 +368,10 @@ typedef enum {
 //   appears to be promoted to int32_t which involves pushing two more bytes onto
 //   the stack, causing the remainder of the va_args() to be offset.
 // PRE:
-// - g_pfDebugOut defined
-void gslc_DebugPrintf(const char* pFmt, ...)
+// - g_pfDebugOut defined 
+void gslc_Printf(GSLC_CB_DEBUG_OUT output, const char* pFmt, ...)
 {
-  if (g_pfDebugOut) {
+  if (output) {
 
     char*    pStr=NULL;
     unsigned nMaxDivisor;
@@ -404,7 +407,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
           nState = GSLC_S_DEBUG_PRINT_TOKEN;
         } else {
           // Normal char
-          (g_pfDebugOut)(cFmt);
+          (output)(cFmt);
         }
         nFmtInd++; // Advance format index
 
@@ -453,7 +456,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
       } else if (nState == GSLC_S_DEBUG_PRINT_STR) {
         while (*pStr != 0) {
           cOut = *pStr;
-          (g_pfDebugOut)(cOut);
+          (output)(cOut);
           pStr++;
         }
         nState = GSLC_S_DEBUG_PRINT_NORM;
@@ -467,7 +470,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
           cOut = *pStr;
           #endif
           if (cOut != 0) {
-            (g_pfDebugOut)(cOut);
+            (output)(cOut);
             pStr++;
           }
         } while (cOut != 0);
@@ -475,7 +478,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
         // Don't advance format string index
 
       } else if (nState == GSLC_S_DEBUG_PRINT_CHAR) {
-        (g_pfDebugOut)(cOut);
+        (output)(cOut);
         nState = GSLC_S_DEBUG_PRINT_NORM;
 
       } else if (nState == GSLC_S_DEBUG_PRINT_UINT16) {
@@ -483,7 +486,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
         // Handle the negation flag if required
         if (bNumNeg) {
           cOut = '-';
-          (g_pfDebugOut)(cOut);
+          (output)(cOut);
           bNumNeg = false;  // Clear the negation flag
         }
 
@@ -493,7 +496,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
         if (nNumRemain < nNumDivisor) {
           if (bNumStart) {
             cOut = '0';
-            (g_pfDebugOut)(cOut);
+            (output)(cOut);
           } else {
             // We haven't started outputting a number yet
             // Check for special case of zero
@@ -509,7 +512,7 @@ void gslc_DebugPrintf(const char* pFmt, ...)
           unsigned nValDigit = nNumRemain / nNumDivisor;
           cOut = nValDigit+'0';
           nNumRemain -= nNumDivisor*nValDigit;
-          (g_pfDebugOut)(cOut);
+          (output)(cOut);
         }
 
         // Detect end of digit decode (ie. 1's)
@@ -2842,9 +2845,9 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       }
 	  #if defined(HMI_SERIAL)
 		  if (eTouch == GSLC_TOUCH_UP_IN) {
-			  if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_UP == GSLC_HMI_TOUCH_UP) {
+			  //if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_UP == GSLC_HMI_TOUCH_UP) {
 				  gslc_hmi_sendTouchUp(pvGui, (void*)(pElemRefTracked));
-			  }
+			  //}
 		  }
 		  if(eTouch == GSLC_TOUCH_DOWN_IN)
 		  {
