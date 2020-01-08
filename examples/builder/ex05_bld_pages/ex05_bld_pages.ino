@@ -24,6 +24,7 @@
 // Headers to include
 // ------------------------------------------------
 #include "GUIslice.h"
+#include "GUIslice_hmi.h"
 #include "GUIslice_drv.h"
 
 // Include any extended elements
@@ -31,8 +32,9 @@
 // Include extended elements
 #include "elem/XCheckbox.h"
 #include "elem/XProgress.h"
-//<Includes !End!>
 
+//<Includes !End!>
+//
 // ------------------------------------------------
 // Headers and Defines for fonts
 // Note that font files are located within the Adafruit-GFX library folder:
@@ -119,6 +121,8 @@ gslc_tsElemRef* m_pElemQuit       = NULL;
 
 // Define debug message function
 static int16_t DebugOut(char ch) { if (ch == (char)'\n') Serial.println(""); else Serial.write(ch); return 0; }
+
+static int16_t HmiOut(char ch) { if (ch == (char)'\n') Serial.println(""); else Serial.write(ch); return 0; }
 
 // ------------------------------------------------
 // Callback Methods
@@ -230,6 +234,7 @@ bool InitGUI()
   // create checkbox E_ELEM_CHECK1
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK1,E_PG_MAIN,&m_asXCheck1,
     (gslc_tsRect){200,80,30,30},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_BLUE_LT2,false);
+  pElemRef->pElem->HMISendEvents |= GSLC_HMI_TOUCH_UP;
 
   // -----------------------------------
   // PAGE: E_PG_EXTRA
@@ -237,11 +242,12 @@ bool InitGUI()
   
   // create E_ELEM_BTN_BACK button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
-    (gslc_tsRect){50,170,50,20},(char*)"Back",0,E_BUILTIN5X8,&CbBtnCommon);
+    (gslc_tsRect){50,170,50,20},(char*)"Back",0,E_FONT_TXT5,&CbBtnCommon);
    
   // create checkbox E_ELEM_CHECK2
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_EXTRA,&m_asXCheck2,
     (gslc_tsRect){60,50,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
+  pElemRef->pElem->HMISendEvents |= GSLC_HMI_TOUCH_UP;
   
   // Create E_LBL_DATA1 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_DATA1,E_PG_EXTRA,(gslc_tsRect){100,50,38,12},
@@ -250,12 +256,12 @@ bool InitGUI()
   // create checkbox E_ELEM_CHECK3
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK3,E_PG_EXTRA,&m_asXCheck3,
     (gslc_tsRect){60,80,20,20},false,GSLCX_CHECKBOX_STYLE_X,GSLC_COL_RED_LT2,false);
+  pElemRef->pElem->HMISendEvents |= GSLC_HMI_TOUCH_UP;
   
   // Create E_LBL_DATA2 text label
   pElemRef = gslc_ElemCreateTxt(&m_gui,E_LBL_DATA2,E_PG_EXTRA,(gslc_tsRect){100,80,38,12},
     (char*)"Data 2",0,E_BUILTIN5X8);
 //<InitGUI !End!>
-
   return true;
 }
 
@@ -269,6 +275,7 @@ void setup()
   //delay(1000);  // NOTE: Some devices require a delay after Serial.begin() before serial port can be used
 
   gslc_InitDebug(&DebugOut);
+  gslc_InitHmi(&HmiOut);
 
   if (!gslc_Init(&m_gui,&m_drv,m_asPage,MAX_PAGE,m_asFont,MAX_FONT)) { return; }
 

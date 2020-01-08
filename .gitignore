@@ -47,3 +47,4 @@ nbdist/
 
 # Builder files
 builder/.gradle
+.vs/*

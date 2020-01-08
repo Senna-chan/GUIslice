@@ -55,7 +55,6 @@ extern "C" {
 #include "GUIslice_config.h"
 
 
-#include "GUIslice_hmi.h"
 
 // Provide an alias for PROGMEM so that we can disable
 // it on devices that don't use it when defining constant
@@ -77,7 +76,11 @@ typedef int16_t (*GSLC_CB_DEBUG_OUT)(char ch);
 
 /// Global debug output function
 /// - The user assigns this function via gslc_InitDebug()
+
 extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
+extern GSLC_CB_DEBUG_OUT g_pfHmiOut;
+#define gslc_DebugPrintf(format, ...) gslc_Printf(g_pfDebugOut, format,  ##__VA_ARGS__)
+#define gslc_HmiPrintf(format, ...) gslc_Printf(g_pfHmiOut, format,  ##__VA_ARGS__)
 
 
 // -----------------------------------------------------------------------
@@ -912,10 +915,21 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
 /// \return none
 ///
 void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc);
+///
+/// Initialize hmi output
+/// - Defines the user function used for hmi output
+/// - pfunc is responsible for outputing a single character
+/// - For Arduino, this user function would typically call Serial.print()
+///
+/// \param[in]  pfunc:     Pointer to user character-out function
+///
+/// \return none
+///
+void gslc_InitHmi(GSLC_CB_DEBUG_OUT pfunc);
 
 
 ///
-/// Optimized printf routine for GUIslice debug/error output
+/// Optimized printf routine for GUIslice debug/error or hmi output
 /// - Only supports '%s','%d','%u' tokens
 /// - Calls on the output function configured in gslc_InitDebug()
 ///
@@ -923,7 +937,7 @@ void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc);
 /// \param[in]  ...:       Variable parameter list
 ///
 /// \return none
-void gslc_DebugPrintf(const char* pFmt, ...);
+void gslc_Printf(GSLC_CB_DEBUG_OUT output, const char* pFmt, ...);
 
 
 ///
