@@ -187,10 +187,10 @@ extern "C" {
 // Enable support for HMI
 // - Set to a serial port to liking for hmi traffic
 // - Set a default UART speed. This can always be changed
-#define HMI_SERIAL Serial2
-#define HMI_SERIAL_INIT HardwareSerial Serial2(USART2)
-
-#define HMI_SPEED  115200
+#define HMI_SERIAL Serial4
+#define HMI_SERIAL_INIT HardwareSerial Serial4(PC11, PC10)
+#define HMI_SERIAL_SPEED  115200
+#define HMI_SERIAL_BUFFER_SIZE 255 // Serial buffer will hold up to 255 bytes for a command
 
 // =============================================================================
 // INTERNAL CONFIGURATION
