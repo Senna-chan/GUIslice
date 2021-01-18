@@ -243,6 +243,7 @@ bool InitGUI()
   // create E_ELEM_BTN_BACK button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN_BACK,E_PG_EXTRA,
     (gslc_tsRect){50,170,50,20},(char*)"Back",0,E_FONT_TXT5,&CbBtnCommon);
+  pElemRef->pElem->HMISendEvents |= GSLC_HMI_TOUCH_UP;
    
   // create checkbox E_ELEM_CHECK2
   pElemRef = gslc_ElemXCheckboxCreate(&m_gui,E_ELEM_CHECK2,E_PG_EXTRA,&m_asXCheck2,

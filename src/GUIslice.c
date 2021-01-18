@@ -2904,6 +2904,19 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
         // Pass in the relative position from corner of element region
         (*pfuncXTouch)(pvGui,(void*)(pElemRefTracked),eTouch,nRelX,nRelY);
       }
+	  #if defined(HMI_SERIAL)
+		  if (eTouch == GSLC_TOUCH_UP_IN) {
+			  //if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_UP == GSLC_HMI_TOUCH_UP) {
+				  gslc_hmi_sendTouchUp(pvGui, (void*)(pElemRefTracked));
+			  //}
+		  }
+		  if(eTouch == GSLC_TOUCH_DOWN_IN)
+		  {
+			  if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_DOWN == GSLC_HMI_TOUCH_DOWN) {
+	              gslc_hmi_sendTouchDown(pvGui, (void*)(pElemRefTracked));
+			  }
+		  }
+	  #endif
       #endif // DRV_TOUCH_NONE
       break;
 

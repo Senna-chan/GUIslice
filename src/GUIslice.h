@@ -54,7 +54,6 @@ extern "C" {
 // Import configuration ( which will import a sub-config depending on device type)
 #include "GUIslice_config.h"
 
-
 // Provide an alias for PROGMEM so that we can disable
 // it on devices that don't use it when defining constant
 // strings in FLASH memory.
