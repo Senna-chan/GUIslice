@@ -98,11 +98,11 @@ extern "C" {
 // - Note that changing this value may require a change
 //   to GSLC_TOUCH_ROTATE as well to ensure the touch screen
 //   orientation matches the display.
-#define GSLC_ROTATE     3
+#define GSLC_ROTATE     1
 
 // Set Default rotation of the touch overlay
 // - Values 0,1,2,3. Rotation is clockwise
-#define GSLC_TOUCH_ROTATE 3
+#define GSLC_TOUCH_ROTATE 1
 
 // -----------------------------------------------------------------------------
 // Touch Handling
@@ -168,11 +168,11 @@ extern "C" {
 // - For memory constrained devices such as Arduino, it is best to
 //   set the following features to 0 (to disable) unless they are
 //   required.
-#define GSLC_FEATURE_COMPOUND       0   // Compound elements (eg. XSelNum)
-#define GSLC_FEATURE_XGAUGE_RADIAL  0   // XGauge control with radial support
-#define GSLC_FEATURE_XGAUGE_RAMP    0   // XGauge control with ramp support
-#define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
-#define GSLC_FEATURE_INPUT          0   // Keyboard / GPIO input control
+#define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
+#define GSLC_FEATURE_XGAUGE_RADIAL  1   // XGauge control with radial support
+#define GSLC_FEATURE_XGAUGE_RAMP    1   // XGauge control with ramp support
+#define GSLC_FEATURE_XTEXTBOX_EMBED 1   // XTextbox control with embedded color
+#define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
 
 // Enable support for SD card
 // - Set to 1 to enable, 0 to disable
@@ -185,12 +185,7 @@ extern "C" {
 // #define GSLC_SD_SDIO
 
 // Enable support for HMI
-// - Set to a serial port to liking for hmi traffic
-// - Set a default UART speed. This can always be changed
-#define HMI_SERIAL Serial4
-#define HMI_SERIAL_INIT HardwareSerial Serial4(PC11, PC10)
-#define HMI_SERIAL_SPEED  115200
-#define HMI_SERIAL_BUFFER_SIZE 255 // Serial buffer will hold up to 255 bytes for a command
+#define GSLC_HMI_ENABLE
 
 // =============================================================================
 // INTERNAL CONFIGURATION
@@ -252,7 +247,7 @@ extern "C" {
 // -----------------------------------------------------------------------------
 // - Uncomment any of the following to enable specific debug modes
 //#define DBG_LOG           // Enable debugging log output
-//#define DBG_TOUCH         // Enable debugging of touch-presses
+#define DBG_TOUCH         // Enable debugging of touch-presses
 //#define DBG_FRAME_RATE    // Enable diagnostic frame rate reporting
 //#define DBG_DRAW_IMM      // Enable immediate rendering of drawing primitives
 //#define DBG_DRIVER        // Enable graphics driver debug reporting

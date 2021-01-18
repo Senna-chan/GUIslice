@@ -55,7 +55,6 @@ extern "C" {
 #include "GUIslice_config.h"
 
 
-
 // Provide an alias for PROGMEM so that we can disable
 // it on devices that don't use it when defining constant
 // strings in FLASH memory.
@@ -73,12 +72,15 @@ extern "C" {
 
 // Type for user-provided debug output function
 typedef int16_t (*GSLC_CB_DEBUG_OUT)(char ch);
+typedef int16_t (*GSLC_CB_DEBUG_IN)();
 
 /// Global debug output function
 /// - The user assigns this function via gslc_InitDebug()
 
 extern GSLC_CB_DEBUG_OUT g_pfDebugOut;
 extern GSLC_CB_DEBUG_OUT g_pfHmiOut;
+extern GSLC_CB_DEBUG_IN  g_pfHmiIn;
+
 #define gslc_DebugPrintf(format, ...) gslc_Printf(g_pfDebugOut, format,  ##__VA_ARGS__)
 #define gslc_HmiPrintf(format, ...) gslc_Printf(g_pfHmiOut, format,  ##__VA_ARGS__)
 
@@ -925,7 +927,7 @@ void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc);
 ///
 /// \return none
 ///
-void gslc_InitHmi(GSLC_CB_DEBUG_OUT pfunc);
+void gslc_InitHmi(GSLC_CB_DEBUG_OUT out, GSLC_CB_DEBUG_IN in);
 
 
 ///
@@ -1958,6 +1960,16 @@ int gslc_ElemGetId(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef);
 /// Functions that configure or modify an existing eleemnt
 /// @{
 // ------------------------------------------------------------------------
+
+///
+/// Set the HMI Events the element must send
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  hmiEvents:   Byte ORed with GSLC_HMI_???? values
+///
+/// \return none
+///
+void gslc_ElemSetHmiEvents(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint8_t hmiEvents);
 
 ///
 /// Set the fill state for an Element

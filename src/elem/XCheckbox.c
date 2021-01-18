@@ -498,6 +498,7 @@ bool gslc_ElemXCheckboxTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int
         bCheckNew = (pCheckbox->bChecked)?false:true;
       }
       gslc_ElemXCheckboxSetState(pGui,pElemRef,bCheckNew);
+      gslc_hmi_sendValueChanged(pvGui, pElemRef);
       break;
     case GSLC_TOUCH_UP_OUT:
       gslc_ElemSetGlow(pGui,pElemRef,false);

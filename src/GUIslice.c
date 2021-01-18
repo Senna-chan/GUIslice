@@ -40,6 +40,7 @@
 
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
+#include "GUIslice_hmi.h"
 #include <stdio.h>
 
 #if defined(DBG_REDRAW)
@@ -74,6 +75,7 @@
 /// - The user assigns this function via gslc_InitDebug()
 extern GSLC_CB_DEBUG_OUT g_pfDebugOut = NULL;
 extern GSLC_CB_DEBUG_OUT g_pfHmiOut = NULL;
+extern GSLC_CB_DEBUG_IN g_pfHmiIn = NULL;
 
 // Forward declaration for trigonometric lookup table
 extern uint16_t  m_nLUTSinF0X16[257];
@@ -272,7 +274,9 @@ bool gslc_Init(gslc_tsGui* pGui,void* pvDriver,gslc_tsPage* asPage,uint8_t nMaxP
   // false which should mark it as a fatal error. Note that
   // touch handler errors are not included as fatal errors.
   if (!bOk) { GSLC_DEBUG_PRINT("ERROR: Init(%s) failed\n",""); }
+
   return bOk;
+
 }
 
 void gslc_SetPinPollFunc(gslc_tsGui* pGui,GSLC_CB_PIN_POLL pfunc)
@@ -356,9 +360,10 @@ void gslc_InitDebug(GSLC_CB_DEBUG_OUT pfunc)
   g_pfDebugOut = pfunc;
 }
 
-void gslc_InitHmi(GSLC_CB_DEBUG_OUT pfunc)
+void gslc_InitHmi(GSLC_CB_DEBUG_OUT out, GSLC_CB_DEBUG_IN in)
 {
-  g_pfHmiOut = pfunc;
+  g_pfHmiOut = out;
+  g_pfHmiIn  = in;
 }
 
 
@@ -419,7 +424,7 @@ void gslc_Printf(GSLC_CB_DEBUG_OUT output, const char* pFmt, ...)
     cFmt = pFmt[nFmtInd];
     #endif
 
-    while (cFmt != 0) {
+    while (cFmt != 0 || nState != GSLC_S_DEBUG_PRINT_NORM) {
 
       if (nState == GSLC_S_DEBUG_PRINT_NORM) {
 
@@ -522,7 +527,7 @@ void gslc_Printf(GSLC_CB_DEBUG_OUT output, const char* pFmt, ...)
             // Check for special case of zero
             if (nNumRemain == 0) {
               cOut = '0';
-              (g_pfDebugOut)(cOut);
+              (output)(cOut);
               // Now fall through to done state
               nNumDivisor = 1;
             }
@@ -580,6 +585,9 @@ void gslc_Quit(gslc_tsGui* pGui)
 // Main polling loop for GUIslice
 void gslc_Update(gslc_tsGui* pGui)
 {
+#ifdef GSLC_HMI_ENABLE
+    gslc_hmi_loop(pGui);
+#endif
   // The touch handling logic is used by both the touchscreen
   // handler as well as the GPIO/pin/keyboard input controller
   #if !defined(DRV_TOUCH_NONE)
@@ -684,7 +692,6 @@ void gslc_Update(gslc_tsGui* pGui)
           // Track and handle the touch events
           // - Handle the events on the current page
           gslc_TrackTouch(pGui,NULL,nTouchX,nTouchY,nTouchPress);
-
           #ifdef DBG_TOUCH
           // Highlight current touch for coordinate debug
           gslc_tsRect rMark = gslc_ExpandRect((gslc_tsRect){(int16_t)nTouchX,(int16_t)nTouchY,1,1},1,1);
@@ -2879,24 +2886,24 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       pElemTracked = gslc_GetElemFromRef(pGui,pElemRefTracked);
       pfuncXTouch = pElemTracked->pfuncXTouch;
 
+      #if defined(GSLC_HMI_ENABLE)
+          if (eTouch == GSLC_TOUCH_UP_IN) {
+              if (pElemRefTracked->pElem->HMISendEvents & GSLC_HMI_TOUCH_UP == GSLC_HMI_TOUCH_UP) {
+                  gslc_hmi_sendTouchUp(pvGui, (void*)(pElemRefTracked));
+              }
+          }
+          if (eTouch == GSLC_TOUCH_DOWN_IN)
+          {
+              if (pElemRefTracked->pElem->HMISendEvents & GSLC_HMI_TOUCH_DOWN == GSLC_HMI_TOUCH_DOWN) {
+                  gslc_hmi_sendTouchDown(pvGui, (void*)(pElemRefTracked));
+              }
+          }
+      #endif
       // Invoke the callback function
       if (pfuncXTouch != NULL) {
         // Pass in the relative position from corner of element region
         (*pfuncXTouch)(pvGui,(void*)(pElemRefTracked),eTouch,nRelX,nRelY);
       }
-	  #if defined(HMI_SERIAL)
-		  if (eTouch == GSLC_TOUCH_UP_IN) {
-			  //if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_UP == GSLC_HMI_TOUCH_UP) {
-				  gslc_hmi_sendTouchUp(pvGui, (void*)(pElemRefTracked));
-			  //}
-		  }
-		  if(eTouch == GSLC_TOUCH_DOWN_IN)
-		  {
-			  if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_DOWN == GSLC_HMI_TOUCH_DOWN) {
-	              gslc_hmi_sendTouchDown(pvGui, (void*)(pElemRefTracked));
-			  }
-		  }
-	  #endif
       #endif // DRV_TOUCH_NONE
       break;
 
@@ -3198,6 +3205,13 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 // Element Update Functions
 // ------------------------------------------------------------------------
 
+void gslc_ElemSetHmiEvents(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint8_t hmiEvents)
+{
+    gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
+    if (!pElem) return;
+    pElem->HMISendEvents = hmiEvents;
+}
+
 void gslc_ElemSetFillEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFillEn)
 {
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
@@ -3210,7 +3224,6 @@ void gslc_ElemSetFillEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFillEn)
   }
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
 }
-
 
 void gslc_ElemSetFrameEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bFrameEn)
 {
@@ -3376,6 +3389,10 @@ void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pS
   if (strncmp(pElem->pStrBuf,pStr,pElem->nStrBufMax)) {
     gslc_StrCopy(pElem->pStrBuf,pStr,pElem->nStrBufMax);
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
+  }
+  uint8_t temp = pElem->HMISendEvents & GSLC_HMI_VALUE_CHANGED;
+  if ((pElem->HMISendEvents & GSLC_HMI_VALUE_CHANGED) == GSLC_HMI_VALUE_CHANGED) {
+      gslc_hmi_sendValueChanged(pGui, pElemRef);
   }
 }
 
@@ -3924,12 +3941,12 @@ void gslc_CollectTouch(gslc_tsGui* pGui,gslc_tsCollect* pCollect,gslc_tsEventTou
         // Released not over tracked element
         eTouch = GSLC_TOUCH_UP_OUT;
         gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
+
       } else {
         // Notify original tracked element for optional custom handling
         eTouch = GSLC_TOUCH_UP_IN;
         gslc_ElemSendEventTouch(pGui,pTrackedRefOld,eTouch,nX,nY);
       }
-
       // Clear glow state
       gslc_ElemSetGlow(pGui,pTrackedRefOld,false);
 
@@ -4180,11 +4197,12 @@ void gslc_TrackTouch(gslc_tsGui* pGui,gslc_tsPage* pPage,int16_t nX,int16_t nY,u
   gslc_teTouch  eTouch = GSLC_TOUCH_NONE;
   if ((pGui->nTouchLastPress == 0) && (nPress > 0)) {
     eTouch = GSLC_TOUCH_DOWN;
+
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("Trk: (%3d,%3d) P=%3u : TouchDown\n\n",nX,nY,nPress);
     #endif
   } else if ((pGui->nTouchLastPress > 0) && (nPress == 0)) {
-    eTouch = GSLC_TOUCH_UP;
+    eTouch = GSLC_TOUCH_UP;   
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("Trk: (%3d,%3d) P=%3u : TouchUp\n\n",nX,nY,nPress);
     #endif
