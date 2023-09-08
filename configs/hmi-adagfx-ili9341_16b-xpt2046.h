@@ -98,11 +98,11 @@ extern "C" {
 // - Note that changing this value may require a change
 //   to GSLC_TOUCH_ROTATE as well to ensure the touch screen
 //   orientation matches the display.
-#define GSLC_ROTATE     1
+#define GSLC_ROTATE     3
 
 // Set Default rotation of the touch overlay
 // - Values 0,1,2,3. Rotation is clockwise
-#define GSLC_TOUCH_ROTATE 1
+#define GSLC_TOUCH_ROTATE 3
 
 // -----------------------------------------------------------------------------
 // Touch Handling
@@ -237,9 +237,9 @@ extern "C" {
 #define GSLC_USE_FLOAT      0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
 #define GSLC_DEV_TOUCH ""
-#define GSLC_USE_PROGMEM 0
+#define GSLC_USE_PROGMEM 1
 
-#define GSLC_LOCAL_STR      0   // 1=Use local strings (in element array), 0=External
+#define GSLC_LOCAL_STR      1   // 1=Use local strings (in element array), 0=External
 #define GSLC_LOCAL_STR_LEN  30  // Max string length of text elements
 
 // -----------------------------------------------------------------------------
@@ -247,7 +247,7 @@ extern "C" {
 // -----------------------------------------------------------------------------
 // - Uncomment any of the following to enable specific debug modes
 //#define DBG_LOG           // Enable debugging log output
-#define DBG_TOUCH         // Enable debugging of touch-presses
+//#define DBG_TOUCH         // Enable debugging of touch-presses
 //#define DBG_FRAME_RATE    // Enable diagnostic frame rate reporting
 //#define DBG_DRAW_IMM      // Enable immediate rendering of drawing primitives
 //#define DBG_DRIVER        // Enable graphics driver debug reporting

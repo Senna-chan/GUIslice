@@ -156,7 +156,14 @@ extern "C" {
 
   // HMI
   // ------------------------------------------------------
-  #include "../configs/hmi-adagfx-ili9341_16b-xpt2046.h"
+  // #include "../configs/hmi-adagfx-ili9341_16b-xpt2046.h"
+
+  // #if defined(__STM32__)
+  //   #include "../configs/hmi-adagfx-ili9341_16b-xpt2046.h"
+  // #else
+  #include "../configs/linux-sdl2-default-mouse.h"
+  // #endif
+
 #endif // USER_CONFIG_LOADED
 
 

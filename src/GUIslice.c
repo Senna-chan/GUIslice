@@ -364,6 +364,9 @@ void gslc_InitHmi(GSLC_CB_DEBUG_OUT out, GSLC_CB_DEBUG_IN in)
 {
   g_pfHmiOut = out;
   g_pfHmiIn  = in;
+  while (1) {
+      if (g_pfHmiIn() < 0) break; // Make sure serial is empty
+  }
 }
 
 
@@ -372,6 +375,7 @@ typedef enum {
   GSLC_S_DEBUG_PRINT_NORM,
   GSLC_S_DEBUG_PRINT_TOKEN,
   GSLC_S_DEBUG_PRINT_UINT16,
+  GSLC_S_DEBUG_PRINT_UINT16H,
   GSLC_S_DEBUG_PRINT_CHAR,
   GSLC_S_DEBUG_PRINT_STR,
   GSLC_S_DEBUG_PRINT_STR_P
@@ -462,7 +466,12 @@ void gslc_Printf(GSLC_CB_DEBUG_OUT output, const char* pFmt, ...)
           bNumStart = false;
           nNumDivisor = nMaxDivisor;
 
-        } else if (cFmt == 'c') {
+        }
+        else if (cFmt == 'x') {
+            nState = GSLC_S_DEBUG_PRINT_UINT16H;
+            nNumRemain = va_arg(vlist, unsigned);
+        }
+        else if (cFmt == 'c') {
           nState = GSLC_S_DEBUG_PRINT_CHAR;
           cOut = (char)va_arg(vlist,unsigned);
 
@@ -550,6 +559,20 @@ void gslc_Printf(GSLC_CB_DEBUG_OUT output, const char* pFmt, ...)
         }
         // Don't advance format string index
 
+      }
+      else if (nState == GSLC_S_DEBUG_PRINT_UINT16H) {
+        char buf[20];
+        memset(buf, 0, 20);
+        char* bufPtr = &buf;
+        sprintf(bufPtr,"%x",nNumRemain);
+        // itoa(nNumRemain, bufPtr, 16);
+        char bufPtrVal = *bufPtr;
+        while (bufPtrVal != 0) {
+            (output)(bufPtrVal);
+            bufPtr++;
+            bufPtrVal = *bufPtr;
+        }
+        nState = GSLC_S_DEBUG_PRINT_NORM;
       }
 
       // Read the format string (usually the next character)
@@ -2075,6 +2098,17 @@ void gslc_SetStackPage(gslc_tsGui* pGui, uint8_t nStackPos, int16_t nPageId)
       gslc_InvalidateRgnPage(pGui, pPage);
     }
   }
+  if (pGui->apPageStack[nStackPos]->HMISendEvents != 0) {
+      if (nStackPos == GSLC_STACK_CUR) {
+          if ((pGui->apPageStack[nStackPos]->HMISendEvents & GSLC_HMI_PAGE_ENTER) != 0) {
+              gslc_hmi_sendPageLoaded(pGui, nPageId);
+          }
+
+          if ((pGui->apPageStack[nStackPos]->HMISendEvents & GSLC_HMI_PAGE_LEAVE) != 0) {
+              gslc_hmi_sendPageUnloaded(pGui, nPageId);
+          }
+      }
+  }
 }
 
 
@@ -2886,37 +2920,24 @@ bool gslc_ElemEvent(void* pvGui,gslc_tsEvent sEvent)
       pElemTracked = gslc_GetElemFromRef(pGui,pElemRefTracked);
       pfuncXTouch = pElemTracked->pfuncXTouch;
 
-      #if defined(GSLC_HMI_ENABLE)
-          if (eTouch == GSLC_TOUCH_UP_IN) {
-              if (pElemRefTracked->pElem->HMISendEvents & GSLC_HMI_TOUCH_UP == GSLC_HMI_TOUCH_UP) {
-                  gslc_hmi_sendTouchUp(pvGui, (void*)(pElemRefTracked));
-              }
-          }
-          if (eTouch == GSLC_TOUCH_DOWN_IN)
-          {
-              if (pElemRefTracked->pElem->HMISendEvents & GSLC_HMI_TOUCH_DOWN == GSLC_HMI_TOUCH_DOWN) {
-                  gslc_hmi_sendTouchDown(pvGui, (void*)(pElemRefTracked));
-              }
-          }
-      #endif
       // Invoke the callback function
       if (pfuncXTouch != NULL) {
         // Pass in the relative position from corner of element region
         (*pfuncXTouch)(pvGui,(void*)(pElemRefTracked),eTouch,nRelX,nRelY);
       }
-	  #if defined(HMI_SERIAL)
-		  if (eTouch == GSLC_TOUCH_UP_IN) {
-			  //if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_UP == GSLC_HMI_TOUCH_UP) {
-				  gslc_hmi_sendTouchUp(pvGui, (void*)(pElemRefTracked));
-			  //}
-		  }
-		  if(eTouch == GSLC_TOUCH_DOWN_IN)
-		  {
-			  if (pElemRefTracked->pElem->HMISendEvents &= GSLC_HMI_TOUCH_DOWN == GSLC_HMI_TOUCH_DOWN) {
-	              gslc_hmi_sendTouchDown(pvGui, (void*)(pElemRefTracked));
-			  }
-		  }
-	  #endif
+      if (g_pfHmiOut != NULL) {
+          if (eTouch == GSLC_TOUCH_UP_IN) {
+              if ((pElemRefTracked->pElem->HMISendEvents & GSLC_HMI_TOUCH_UP) != 0) {
+                  gslc_hmi_sendTouchUp(pvGui, (void*)(pElemRefTracked));
+              }
+          }
+          if (eTouch == GSLC_TOUCH_DOWN_IN)
+          {
+              if ((pElemRefTracked->pElem->HMISendEvents & GSLC_HMI_TOUCH_DOWN) != 0) {
+                  gslc_hmi_sendTouchDown(pvGui, (void*)(pElemRefTracked));
+              }
+          }
+      }
       #endif // DRV_TOUCH_NONE
       break;
 
@@ -3218,8 +3239,23 @@ bool gslc_ElemDrawByRef(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_teRedrawT
 // Element Update Functions
 // ------------------------------------------------------------------------
 
-void gslc_ElemSetHmiEvents(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint8_t hmiEvents)
+void  gslc_PageSetHmiEvents(gslc_tsGui* pGui, int16_t nPageId, bool ePageEnter, bool ePageLeave)
 {
+    uint8_t hmiEvents = 0;
+    if (ePageEnter) hmiEvents |= GSLC_HMI_PAGE_ENTER;
+    if (ePageLeave) hmiEvents |= GSLC_HMI_PAGE_LEAVE;
+    gslc_tsPage* pageElem = gslc_PageFindById(pGui, nPageId);
+    if (!pageElem) return;
+    pageElem->HMISendEvents = hmiEvents;
+}
+
+void  gslc_ElemSetHmiEvents(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, bool eTouchUp, bool eTouchDown, bool eTouchMove, bool eValueChanged)
+{
+    uint8_t hmiEvents = 0;
+    if(eTouchUp) hmiEvents       |= GSLC_HMI_TOUCH_UP;
+    if(eTouchDown) hmiEvents     |= GSLC_HMI_TOUCH_DOWN;
+    if(eTouchMove) hmiEvents     |= GSLC_HMI_TOUCH_MOVE;
+    if(eValueChanged) hmiEvents  |= GSLC_HMI_VALUE_CHANGED;
     gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
     if (!pElem) return;
     pElem->HMISendEvents = hmiEvents;
@@ -3387,7 +3423,7 @@ void gslc_StrCopy(char* pDstStr,const char* pSrcStr,uint16_t nDstLen)
 void gslc_ElemSetTxtStr(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,const char* pStr)
 {
   gslc_tsElem* pElem = gslc_GetElemFromRefD(pGui, pElemRef, __LINE__);
-  if (!pElem) return;
+ if (!pElem) return;
 
   // Check for read-only status (in case the string was
   // defined in Flash/PROGMEM)

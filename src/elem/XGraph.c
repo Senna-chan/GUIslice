@@ -239,6 +239,25 @@ void gslc_ElemXGraphAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal)
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
 }
 
+void gslc_ElemXGraphClear(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef)
+{
+    gslc_tsXGraph* pBox = NULL;
+    gslc_tsElem* pElem = gslc_GetElemFromRef(pGui, pElemRef);
+    pBox = (gslc_tsXGraph*)(pElem->pXData);
+
+    for (int i = 0; i < pBox->nBufMax; i++) {
+        pBox->pBuf[i] = pBox->nPlotValMin;
+    }
+
+    // Advance the pointer
+    // - Wrap the pointers around end of buffer
+    pBox->nBufCnt = 0;
+
+    // Set the redraw flag
+    // - Only need incremental redraw
+    gslc_ElemSetRedraw(pGui, pElemRef, GSLC_REDRAW_INC);
+}
+
 
 bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {

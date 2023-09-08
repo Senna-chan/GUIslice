@@ -37,7 +37,7 @@
 // GUIslice library
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
-
+#include "GUIslice_hmi.h"
 #include "elem/XSeekbar.h"
 
 #include <stdio.h>
@@ -202,6 +202,9 @@ void gslc_ElemXSeekbarSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t n
   // Only update if changed
   if (nPos != nPosOld) {
     // If any position callback is defined, call it now
+      if (pElem->HMISendEvents &= GSLC_HMI_VALUE_CHANGED) {
+          gslc_hmi_sendValueChanged(pGui, pElemRef);
+      }
     if (pSeekbar->pfuncXPos != NULL) {
       (*pSeekbar->pfuncXPos)((void*)(pGui),(void*)(pElemRef),nPos);
     }

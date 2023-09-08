@@ -153,6 +153,7 @@ void gslc_ElemXTogglebtnSetStateHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,b
   if (bOn != bStateOld) {
     // Only need an incremental redraw
     gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
+    gslc_hmi_sendValueChanged(pGui, pElemRef);
   }
 
 }

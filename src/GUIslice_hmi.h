@@ -3,7 +3,10 @@
 #ifndef _GUISLICE_HMI_h
 #define _GUISLICE_HMI_h
 
+#ifdef __ARDUINO__
 #include <Arduino.h>
+#endif
+
 #include "GUIslice.h"
 
 
@@ -17,6 +20,8 @@ enum OBJECT_ELEM_DATA_FIELDS { // This holds the different data fields that a el
 	HEIGHT = 3,
 	XPOS = 4,
 	YPOS = 5,
+	MINVALUE = 6,
+	MAXVALUE = 7,
 };
 
 // WHEN SENDING FROM MCU TO DISPLAY IT IS VALUE + 0x00. WHEN SENDING FROM DISPLAY TO MCU IT IS VALUE + 0x20
@@ -31,9 +36,22 @@ enum HMI_SERIAL_COMMANDS {
 };
 
 enum HMI_SERIAL_CMD_COMMANDS {
-	REBOOT = 0x00
+	REBOOT = 0x00,
+	STARTED = 0x01,
+	REFRESH = 0x02,
 };
 
+typedef struct {
+	uint8_t header;			// Header byte.
+	uint8_t packetNumber;	// PacketNumber
+	uint16_t size;			// complete packet size
+	uint16_t dataSize;		// DataSize
+	uint8_t command;		// HMICommand
+	int16_t elementId;		// ElementId. We directly parse it here
+	uint8_t* data;			// Datapointer. MAKE SURE TO FREE IT Otherwisae memory leak city
+	uint8_t crc;			// CRC
+	uint8_t footer;			// Footer byte.
+} hmiCommand_s;
 
 #define HMI_BUFFER_ERROR (uint8_t[]){0xA0,0xFF,0xFF,0xFF}
 
@@ -45,5 +63,8 @@ void gslc_hmi_sendPageUnloaded(void* pvGui, int16_t pageId);
 void gslc_hmi_sendValueChanged(void* pvGui, void* pvElemRef);
 void gslc_hmi_sendCmd(uint8_t cmd);
 void gslc_hmi_sendCmdWithData(uint8_t cmd,uint8_t* data, uint8_t dataLength);
+
+void gslc_hmi_read_packet();
+void gslc_hmi_write_packet(hmiCommand_s hmiCommand);
 void gslc_hmi_loop(void* pvGui);
 #endif

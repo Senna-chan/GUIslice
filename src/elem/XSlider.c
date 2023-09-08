@@ -35,7 +35,7 @@
 // GUIslice library
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
-
+#include "GUIslice_hmi.h"
 #include "elem/XSlider.h"
 
 #include <stdio.h>
@@ -188,6 +188,9 @@ void gslc_ElemXSliderSetPos(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nP
   // Only update if changed
   if (nPos != nPosOld) {
     // If any position callback is defined, call it now
+    if (pElem->HMISendEvents &= GSLC_HMI_VALUE_CHANGED) {
+        gslc_hmi_sendValueChanged(pGui, pElemRef);
+    }
     if (pSlider->pfuncXPos != NULL) {
       (*pSlider->pfuncXPos)((void*)(pGui),(void*)(pElemRef),nPos);
     }

@@ -37,7 +37,7 @@
 #include "GUIslice_drv.h"
 
 #include "elem/XListbox.h"
-
+#include "GUIslice_hmi.h"
 #include <stdio.h>
 
 #if (GSLC_USE_PROGMEM)
@@ -888,7 +888,9 @@ bool gslc_ElemXListboxTouch(void* pvGui, void* pvElemRef, gslc_teTouch eTouch, i
       if (bDoRedraw) {
         // Update the selection
         gslc_ElemXListboxSetSel(pGui, pElemRef, nItemCurSel);
-
+        if(pElemRef->pElem->HMISendEvents &= GSLC_HMI_VALUE_CHANGED){
+            gslc_hmi_sendValueChanged(pGui, pElemRef);
+        }
         // If any selection callback is defined, call it now
         if (pListbox->pfuncXSel != NULL) {
           (*pListbox->pfuncXSel)((void*)(pGui), (void*)(pElemRef), nItemCurSel);

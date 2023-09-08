@@ -35,7 +35,7 @@
 // GUIslice library
 #include "GUIslice.h"
 #include "GUIslice_drv.h"
-
+#include "GUIslice_hmi.h"
 #include "elem/XSpinner.h"
 
 #include <stdio.h>
@@ -327,7 +327,7 @@ void gslc_ElemXSpinnerSetCounter(gslc_tsGui* pGui,gslc_tsXSpinner* pSpinner,int1
   // Update the element
   gslc_tsElemRef* pElemRef = gslc_CollectFindElemById(pGui,&pSpinner->sCollect,SPINNER_ID_TXT);
   gslc_ElemSetTxtStr(pGui,pElemRef,acStrNew);
-
+  gslc_hmi_sendValueChanged(pGui, pElemRef);
 }
 
 
